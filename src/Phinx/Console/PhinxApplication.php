@@ -54,6 +54,7 @@ class PhinxApplication extends Application
         $this->add(new Command\Init());
         $this->add(new Command\Create());
         $this->add(new Command\Migrate());
+        $this->add(new Command\MigrateFromEnvironmentVariables());
         $this->add(new Command\Rollback());
         $this->add(new Command\Status());
         $this->add(new Command\Test());
