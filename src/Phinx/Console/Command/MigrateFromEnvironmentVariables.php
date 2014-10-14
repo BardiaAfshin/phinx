@@ -1,7 +1,7 @@
 <?php
 /**
  * Author: bafshin
- * Email: Bardia Afshin <bafshin@guthy-renker.com>
+ * Email: Bardia Afshin
  * Date: 10/13/14
  * Time: 10:44 AM
  */
@@ -21,7 +21,7 @@ class MigrateFromEnvironmentVariables extends AbstractCommand {
 
     private $environemnt_variables = array(
                                     'host'      => 'PHINX_DBHOST',
-                                    'name'    => 'PHINX_DBNAME',
+                                    'name'      => 'PHINX_DBNAME',
                                     'user'      => 'PHINX_DBUSER',
                                     'pass'      => 'PHINX_DBPASS',
                                     'port'      => 'PHINX_DBPORT'
@@ -33,6 +33,11 @@ class MigrateFromEnvironmentVariables extends AbstractCommand {
     protected function configure()
     {
         parent::configure();
+
+        $this->addOption('--environment', '-e', InputArgument::OPTIONAL, 'The target environment');
+
+
+
         $this->setName('migrate-from-environment-variables');
 
         $this->addArgument(
@@ -74,7 +79,7 @@ class MigrateFromEnvironmentVariables extends AbstractCommand {
 The <info>migrate-from-environment-variables</info> command runs all available migrations, via set environment
 variables
 
-<info>phinx migrate-from-environment-variables [HOST] [DBNAME] [USER] [PASSWORD] [PORT]</info>
+<info>phinx migrate-from-environment-variables [HOST] [DBNAME] [USER] [PORT] --password</info>
 
 EOT
             );
@@ -85,8 +90,7 @@ EOT
     {
         $this->bootstrap($input, $output);
 
-//        $version = $input->getOption('target');
-//        $environment = $input->getOption('environment');
+        $environment = $input->getOption('environment');
 
         /*
         if (null === $environment) {
@@ -97,30 +101,9 @@ EOT
         }
         */
 
-        foreach( $this->environemnt_variables as $key => $value) {
-
-            if(in_array($key, $this->arguments)) {
-                echo "\n getArgument $key => $value";
-                ${$key} = $input->getArgument("$key");
-            }
-            else if (in_array($key, $this->options)) {
-                ${$key} = $input->getOption("$key");
-            }
-            else {
-                echo "\n $key not found \n";
-            }
+        $this->setEnvironmentVariables($input, $output);
 
 
-            if( ${$key} == null) {
-                $output->writeln("<error>${value} is not set</error>");
-            }
-            else {
-                putenv("$value=${$key}");
-            }
-        }
-
-
-        $environment = 'adhoc';
         $version = 1;
 
         $envOptions = $this->getConfig()->getEnvironment($environment);
@@ -138,6 +121,32 @@ EOT
 
         $output->writeln('');
         $output->writeln('<comment>All Done. Took ' . sprintf('%.4fs', $end - $start) . '</comment>');
+    }
+
+    private function setEnvironmentVariables(InputInterface &$input, OutputInterface &$output)
+    {
+        foreach( $this->environemnt_variables as $key => $value) {
+
+            if(in_array($key, $this->arguments)) {
+                echo "\n getArgument $key => $value"."\n";
+                ${$key} = $input->getArgument("$key");
+            }
+            else if (in_array($key, $this->options)) {
+                ${$key} = $input->getOption("$key");
+            }
+            else {
+                echo "\n $key not found \n";
+            }
+
+
+            if( ${$key} == null) {
+                $output->writeln("<warning>${value} is not set</warning>");
+            }
+            else {
+                $output->writeln("<info>$value = ${$key}</info>");
+                putenv("$value=${$key}");
+            }
+        }
     }
 
 }
