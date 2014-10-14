@@ -8,17 +8,30 @@
 
 namespace Test\Phinx\Console\Command;
 
+use Phinx\Console\Command\MigrateFromEnvironmentVariables;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Console\Output\StreamOutput;
 use Phinx\Config\Config;
 use Phinx\Console\Command\Migrate;
 
-class MigrateFromEnvironmentVariables
+class MigrateFromEnvironmentVariablesTest extends \PHPUnit_Framework_TestCase
 {
     protected $config = array();
+    protected $arguments = array();
+    protected $options = array();
 
     protected function setUp()
     {
+        $this->arguments = array(
+            'host' => '%%PHINX_DBHOST%%',
+            'dbname' => '%%PHINX_DBNAME%%',
+            'user' => '%%PHINX_DBUSER%%',
+            'port' => '%%PHINX_DBPORT%%');
+
+        $this->options = array(
+            'pass' => '%%PHINX_DBPASS%%'
+        );
+
     }
 
     protected function tearDown()
@@ -29,7 +42,7 @@ class MigrateFromEnvironmentVariables
     public function testExecute()
     {
         $application = new \Phinx\Console\PhinxApplication('testing');
-        $application->add( new Migrate() );
+        $application->add( new MigrateFromEnvironmentVariables() );
 
         $output = new StreamOutput( fopen('php:://memory', 'a', false) );
 
@@ -51,24 +64,6 @@ class MigrateFromEnvironmentVariables
 
     }
 
-    /*
-     * verify the user ran the command
-     * `phinx
-     */
-    public function testEnvironmentVariablesRquiredPassedViaCLI() {
-        $env_variables = $this->phinxEnvVariables();
 
-    }
-
-
-    protected function phinxEnvVariables() {
-        return array(
-            'host' => '%%PHINX_DBHOST%%',
-            'dbname' => '%%PHINX_DBNAME%%',
-            'user' => '%%PHINX_DBUSER%%',
-            'pass' => '%%PHINX_DBPASS%%',
-            'port' => '%%PHINX_DBPORT%%'
-        );
-    }
 
 }
